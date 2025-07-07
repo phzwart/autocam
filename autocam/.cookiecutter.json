@@ -1,0 +1,16 @@
+{
+  "_checkout": null,
+  "_output_dir": "/storage/Projects/autocam_project/autocam",
+  "_repo_dir": "/home/pzwart/.cookiecutters/cookiecutter-hypermodern-python",
+  "_template": "gh:cjolowicz/cookiecutter-hypermodern-python",
+  "author": "Petrus H Zwart",
+  "copyright_year": "2025",
+  "development_status": "Development Status :: 3 - Alpha",
+  "email": "phzwart@lbl.gov",
+  "friendly_name": "Autocam",
+  "github_user": "phzwart",
+  "license": "MIT",
+  "package_name": "autocam",
+  "project_name": "autocam",
+  "version": "1.0.0"
+}
