@@ -58,6 +58,10 @@ jobs:
           version=$(poetry version | awk '{ print $2 }') &&
           poetry version $version.dev.$(date +%s)
 
+      - name: Show version in pyproject.toml
+        run: |
+          grep '^version = ' pyproject.toml
+
       - name: Clean build artifacts
         run: rm -rf dist/ build/
 
