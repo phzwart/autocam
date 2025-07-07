@@ -9,32 +9,8 @@ from textwrap import dedent
 import nox
 
 
-try:
-    from nox_poetry import Session as PoetrySession
-    from nox_poetry import session
-except ImportError:
-    message = f"""\
-    Nox failed to import the 'nox-poetry' package.
-
-    Please install it using the following command:
-
-    {sys.executable} -m pip install nox-poetry"""
-    raise SystemExit(dedent(message)) from None
-
-
-class Session(PoetrySession):
-    """Custom session class that handles Poetry version compatibility."""
-    
-    def install(self, *args, **kwargs):
-        """Install packages with Poetry compatibility fallback."""
-        try:
-            return super().install(*args, **kwargs)
-        except Exception as e:
-            if "export" in str(e).lower():
-                # Fallback for older Poetry versions
-                print("Warning: Poetry export not available, using pip install directly")
-                return self._run("pip", "install", *args, **kwargs)
-            raise
+# Use regular nox instead of nox-poetry to avoid Poetry export issues
+import nox
 
 
 package = "autocam"
@@ -51,7 +27,7 @@ nox.options.sessions = (
 )
 
 
-def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
+def activate_virtualenv_in_precommit_hooks(session) -> None:
     """Activate virtualenv in hooks installed by pre-commit.
 
     This function patches git hooks installed by pre-commit to activate the
@@ -126,7 +102,7 @@ def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
 
 
 @session(name="pre-commit", python=python_versions[0])
-def precommit(session: Session) -> None:
+def precommit(session) -> None:
     """Lint using pre-commit."""
     args = session.posargs or [
         "run",
@@ -154,17 +130,10 @@ def precommit(session: Session) -> None:
 
 
 @session(python=python_versions[0])
-def safety(session: Session) -> None:
+def safety(session) -> None:
     """Scan dependencies for insecure packages."""
-    # Check if poetry export command is available (Poetry >= 1.2.0)
-    try:
-        requirements = session.poetry.export_requirements()
-        session.install("safety")
-        session.run("safety", "check", "--full-report", f"--file={requirements}")
-    except Exception:
-        # Fallback for older Poetry versions
-        session.install("safety")
-        session.run("safety", "check", "--full-report")
+    session.install("safety")
+    session.run("safety", "check", "--full-report")
 
 
 @session(python=python_versions)
