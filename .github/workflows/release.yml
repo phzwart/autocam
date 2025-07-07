@@ -48,7 +48,7 @@ jobs:
         uses: salsify/action-detect-and-tag-new-version@v2.0.1
         with:
           version-command: |
-            bash -o pipefail -c "python -c \"import autocam; print(autocam.__version__)\""
+            bash -o pipefail -c "grep '^version = ' pyproject.toml | cut -d'\"' -f2"
 
       - name: Bump version for developmental release
         if: "! steps.check-version.outputs.tag"
