@@ -65,6 +65,7 @@ jobs:
             echo 'Poetry >=2.0.0 not installed!'
             exit 1
           fi
+        shell: bash
 
       - name: Install Nox
         run: |
@@ -144,6 +145,7 @@ jobs:
             echo 'Poetry >=2.0.0 not installed!'
             exit 1
           fi
+        shell: bash
 
       - name: Install Nox
         run: |
