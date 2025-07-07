@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "autocam"
-version = "1.1.0"
+version = '1.1.1'
 description = "Autocam"
 authors = ["Petrus H Zwart <phzwart@lbl.gov>"]
 license = "MIT"
@@ -24,7 +24,7 @@ wheel = ">=0.38.1"
 Pygments = ">=2.10.0"
 bandit = ">=1.7.4"
 black = ">=21.10b0"
-coverage = {extras = ["toml"], version = ">=6.2"}
+coverage = {extras = ["toml"], version = '1.1.1'}
 darglint = ">=1.8.1"
 flake8 = ">=4.0.1"
 flake8-bugbear = ">=21.9.2"
@@ -44,8 +44,8 @@ sphinx-autobuild = ">=2021.3.14"
 sphinx-click = ">=3.0.2"
 setuptools-scm = ">=8.0.0"
 typeguard = ">=2.13.3"
-xdoctest = {extras = ["colors"], version = ">=0.15.10"}
-myst-parser = {version = ">=0.16.1"}
+xdoctest = {extras = ["colors"], version = '1.1.1'}
+myst-parser = {version = '1.1.1'}
 
 [tool.poetry.scripts]
 autocam = "autocam.__main__:main"
