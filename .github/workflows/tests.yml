@@ -61,7 +61,7 @@ jobs:
         run: |
           pipx install poetry --pip-args='--pre'
           poetry --version
-          poetry --version | grep -E '2\\.' || (echo 'Poetry >=2.0.0 not installed!' && exit 1)
+          poetry --version | grep -E 'version 2\\.' || (echo 'Poetry >=2.0.0 not installed!' && exit 1)
 
       - name: Install Nox
         run: |
@@ -137,7 +137,7 @@ jobs:
         run: |
           pipx install poetry --pip-args='--pre'
           poetry --version
-          poetry --version | grep -E '2\\.' || (echo 'Poetry >=2.0.0 not installed!' && exit 1)
+          poetry --version | grep -E 'version 2\\.' || (echo 'Poetry >=2.0.0 not installed!' && exit 1)
 
       - name: Install Nox
         run: |
