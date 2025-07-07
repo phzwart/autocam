@@ -1,4 +1,5 @@
 """Nox sessions."""
+
 import os
 import shlex
 import shutil
@@ -7,6 +8,7 @@ from pathlib import Path
 from textwrap import dedent
 
 import nox
+from nox import session
 
 
 package = "autocam"

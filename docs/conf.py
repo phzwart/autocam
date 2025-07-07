@@ -1,4 +1,5 @@
 """Sphinx configuration."""
+
 project = "Autocam"
 author = "Petrus H Zwart"
 copyright = "2025, Petrus H Zwart"
