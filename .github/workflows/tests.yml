@@ -57,10 +57,11 @@ jobs:
           pipx uninstall poetry || true
           pip uninstall -y poetry || true
 
-      - name: Install Poetry >=1.9.0
+      - name: Install Poetry >=2.0.0
         run: |
-          pipx install poetry==1.9.0
+          pipx install poetry --pip-args='--pre'
           poetry --version
+          poetry --version | grep -E '2\\.' || (echo 'Poetry >=2.0.0 not installed!' && exit 1)
 
       - name: Install Nox
         run: |
@@ -132,10 +133,11 @@ jobs:
           pipx uninstall poetry || true
           pip uninstall -y poetry || true
 
-      - name: Install Poetry >=1.9.0
+      - name: Install Poetry >=2.0.0
         run: |
-          pipx install poetry==1.9.0
+          pipx install poetry --pip-args='--pre'
           poetry --version
+          poetry --version | grep -E '2\\.' || (echo 'Poetry >=2.0.0 not installed!' && exit 1)
 
       - name: Install Nox
         run: |
