@@ -10,7 +10,7 @@ import nox
 
 
 try:
-    from nox_poetry import Session
+    from nox_poetry import Session as PoetrySession
     from nox_poetry import session
 except ImportError:
     message = f"""\
@@ -20,6 +20,21 @@ except ImportError:
 
     {sys.executable} -m pip install nox-poetry"""
     raise SystemExit(dedent(message)) from None
+
+
+class Session(PoetrySession):
+    """Custom session class that handles Poetry version compatibility."""
+    
+    def install(self, *args, **kwargs):
+        """Install packages with Poetry compatibility fallback."""
+        try:
+            return super().install(*args, **kwargs)
+        except Exception as e:
+            if "export" in str(e).lower():
+                # Fallback for older Poetry versions
+                print("Warning: Poetry export not available, using pip install directly")
+                return self._run("pip", "install", *args, **kwargs)
+            raise
 
 
 package = "autocam"
