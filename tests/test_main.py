@@ -72,14 +72,17 @@ def test_import_error_fallback() -> None:
         # Remove the module to force import error
         if "autocam._version" in sys.modules:
             del sys.modules["autocam._version"]
-        
+
         # Also remove autocam module to force re-import
         if "autocam" in sys.modules:
             del sys.modules["autocam"]
-        
+
         # Mock the import to fail
-        with patch("builtins.__import__", side_effect=ImportError("No module named '_version'")):
+        with patch(
+            "builtins.__import__", side_effect=ImportError("No module named '_version'")
+        ):
             from autocam import __version__
+
             assert __version__ == "unknown"
     finally:
         # Restore original modules
