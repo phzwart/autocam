@@ -138,7 +138,7 @@ def safety(session) -> None:
 
 
 @session(python=python_versions)
-def mypy(session: Session) -> None:
+def mypy(session) -> None:
     """Type-check using mypy."""
     args = session.posargs or ["src", "tests", "docs/conf.py"]
     session.install(".")
@@ -149,7 +149,7 @@ def mypy(session: Session) -> None:
 
 
 @session(python=python_versions)
-def tests(session: Session) -> None:
+def tests(session) -> None:
     """Run the test suite."""
     session.install(".")
     session.install("coverage[toml]", "pytest", "pygments")
@@ -161,7 +161,7 @@ def tests(session: Session) -> None:
 
 
 @session(python=python_versions[0])
-def coverage(session: Session) -> None:
+def coverage(session) -> None:
     """Produce the coverage report."""
     args = session.posargs or ["report"]
 
@@ -174,7 +174,7 @@ def coverage(session: Session) -> None:
 
 
 @session(python=python_versions[0])
-def typeguard(session: Session) -> None:
+def typeguard(session) -> None:
     """Runtime type checking using Typeguard."""
     session.install(".")
     session.install("pytest", "typeguard", "pygments")
@@ -182,7 +182,7 @@ def typeguard(session: Session) -> None:
 
 
 @session(python=python_versions)
-def xdoctest(session: Session) -> None:
+def xdoctest(session) -> None:
     """Run examples with xdoctest."""
     if session.posargs:
         args = [package, *session.posargs]
@@ -197,7 +197,7 @@ def xdoctest(session: Session) -> None:
 
 
 @session(name="docs-build", python=python_versions[0])
-def docs_build(session: Session) -> None:
+def docs_build(session) -> None:
     """Build the documentation."""
     args = session.posargs or ["docs", "docs/_build"]
     if not session.posargs and "FORCE_COLOR" in os.environ:
@@ -214,7 +214,7 @@ def docs_build(session: Session) -> None:
 
 
 @session(python=python_versions[0])
-def docs(session: Session) -> None:
+def docs(session) -> None:
     """Build and serve the documentation with live reloading on file changes."""
     args = session.posargs or ["--open-browser", "docs", "docs/_build"]
     session.install(".")
