@@ -25,7 +25,9 @@
 
 ## Requirements
 
-- TODO
+- Python 3.9+
+- Conda (for environment management)
+- Poetry (for dependency management)
 
 ## Installation
 
@@ -34,6 +36,28 @@ You can install _Autocam_ via [pip] from [PyPI]:
 ```console
 $ pip install autocam
 ```
+
+## Development Setup
+
+For development, clone the repository and set up the environment:
+
+```console
+$ git clone https://github.com/phzwart/autocam.git
+$ cd autocam
+$ conda create -n autocam python=3.10 -y
+$ conda activate autocam
+$ pip install poetry
+$ poetry install
+$ poetry run pre-commit install
+```
+
+Run tests with:
+
+```console
+$ poetry run nox
+```
+
+See [Contributing] for more details.
 
 ## Usage
 

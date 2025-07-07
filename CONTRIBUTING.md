@@ -37,17 +37,40 @@ Request features on the [Issue Tracker].
 
 ## How to set up your development environment
 
-You need Python 3.7+ and the following tools:
+You need Python 3.9+ and the following tools:
 
-- [Poetry]
-- [Nox]
-- [nox-poetry]
+- [Conda] (for environment management)
+- [Poetry] (for dependency management)
+- [Nox] (for testing)
 
-Install the package with development requirements:
+### Step 1: Clone the repository
 
 ```console
+$ git clone https://github.com/phzwart/autocam.git
+$ cd autocam
+```
+
+### Step 2: Create and activate the conda environment
+
+```console
+$ conda create -n autocam python=3.10 -y
+$ conda activate autocam
+```
+
+### Step 3: Install Poetry and project dependencies
+
+```console
+$ pip install poetry
 $ poetry install
 ```
+
+### Step 4: Install pre-commit hooks (recommended)
+
+```console
+$ poetry run pre-commit install
+```
+
+This will automatically run formatting and linting checks before each commit.
 
 You can now run an interactive Python session,
 or the command-line interface:
@@ -57,33 +80,57 @@ $ poetry run python
 $ poetry run autocam
 ```
 
+[conda]: https://docs.conda.io/
 [poetry]: https://python-poetry.org/
 [nox]: https://nox.thea.codes/
-[nox-poetry]: https://nox-poetry.readthedocs.io/
 
 ## How to test the project
+
+Make sure you're in the `autocam` conda environment:
+
+```console
+$ conda activate autocam
+```
 
 Run the full test suite:
 
 ```console
-$ nox
+$ poetry run nox
+```
+
+Or run with a specific Python version:
+
+```console
+$ poetry run nox --python=3.10
 ```
 
 List the available Nox sessions:
 
 ```console
-$ nox --list-sessions
+$ poetry run nox --list-sessions
 ```
 
 You can also run a specific Nox session.
 For example, invoke the unit test suite like this:
 
 ```console
-$ nox --session=tests
+$ poetry run nox --session=tests
+```
+
+Or run pre-commit checks:
+
+```console
+$ poetry run nox --session=pre-commit
 ```
 
 Unit tests are located in the _tests_ directory,
 and are written using the [pytest] testing framework.
+
+**Note**: The project uses pre-commit hooks that automatically format and lint your code before commits. If you haven't installed them, run:
+
+```console
+$ poetry run pre-commit install
+```
 
 [pytest]: https://pytest.readthedocs.io/
 
@@ -94,15 +141,22 @@ Open a [pull request] to submit changes to this project.
 Your pull request needs to meet the following guidelines for acceptance:
 
 - The Nox test suite must pass without errors and warnings.
-- Include unit tests. This project maintains 100% code coverage.
+- Include unit tests. This project maintains 85%+ code coverage.
 - If your changes add functionality, update the documentation accordingly.
+- All pre-commit hooks must pass (black, flake8, isort, etc.).
 
 Feel free to submit early, though—we can always iterate on this.
 
 To run linting and code formatting checks before committing your change, you can install pre-commit as a Git hook by running the following command:
 
 ```console
-$ nox --session=pre-commit -- install
+$ poetry run pre-commit install
+```
+
+**Pro tip**: The pre-commit hooks will automatically run when you commit, but you can also run them manually:
+
+```console
+$ poetry run pre-commit run --all-files
 ```
 
 It is recommended to open an issue before starting work on anything.
