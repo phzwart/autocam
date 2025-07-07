@@ -10,6 +10,7 @@ permissions:
   contents: write
   issues: write
   pull-requests: write
+  id-token: write
 
 jobs:
   release:
@@ -73,7 +74,7 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.TEST_PYPI_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
+          repository-url: https://test.pypi.org/legacy/
 
       - name: Publish the release notes
         uses: release-drafter/release-drafter@v5.23.0
