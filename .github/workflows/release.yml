@@ -58,6 +58,9 @@ jobs:
           version=$(poetry version | awk '{ print $2 }') &&
           poetry version $version.dev.$(date +%s)
 
+      - name: Clean build artifacts
+        run: rm -rf dist/ build/
+
       - name: Build package
         run: |
           poetry build --ansi
