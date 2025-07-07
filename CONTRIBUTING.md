@@ -167,3 +167,31 @@ This will allow a chance to talk it over with the owners and validate your appro
 <!-- github-only -->
 
 [code of conduct]: CODE_OF_CONDUCT.md
+
+## Release Workflow (IMPORTANT)
+
+**Do NOT create or push version tags manually.**
+
+The release workflow will automatically:
+
+- Detect a version bump in `pyproject.toml`
+- Create and push the version tag (e.g., `v1.2.3`)
+- Build and publish the package to PyPI
+- Create a GitHub release with release notes
+
+### To create a new release:
+
+1. Bump the version:
+   ```bash
+   python scripts/bump_version.py [major|minor|patch]
+   ```
+2. Stage and commit the change:
+   ```bash
+   git add pyproject.toml
+   git commit -m "Bump version to X.Y.Z"
+   git push
+   ```
+
+**Do NOT run `git tag` or `git push --tags`.**
+
+The workflow will handle tagging and publishing automatically.
