@@ -3,3 +3,4 @@ nox>=2024.1.13
 nox-poetry>=1.0.3
 poetry>=1.7.0
 virtualenv>=20.26.6,<21.0.0
+attrs<23
