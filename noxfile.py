@@ -11,6 +11,7 @@ import nox
 
 # Use regular nox instead of nox-poetry to avoid Poetry export issues
 import nox
+from nox import session
 
 
 package = "autocam"
