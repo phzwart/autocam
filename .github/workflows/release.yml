@@ -49,7 +49,7 @@ jobs:
         uses: salsify/action-detect-and-tag-new-version@v2.0.1
         with:
           version-command: |
-            bash -o pipefail -c "grep '^version = ' pyproject.toml | cut -d'\"' -f2"
+            bash -o pipefail -c "awk '/^version = / {gsub(/[\"'\"]/, \"\"); print \$3}' pyproject.toml"
 
       - name: Bump version for developmental release
         if: "! steps.check-version.outputs.tag"
