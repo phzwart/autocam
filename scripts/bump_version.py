@@ -57,7 +57,7 @@ def bump_version(version_type):
     print(f"New version: {new_version}")
     
     # Update pyproject.toml
-    new_content = re.sub(r'version = "[^"]+"', f'version = "{new_version}"', content)
+    new_content = re.sub(r'version = "[^"]+"', f'version = {new_version!r}', content)
     pyproject_path.write_text(new_content)
     
     print(f"Updated pyproject.toml to version {new_version}")
@@ -72,8 +72,8 @@ if __name__ == "__main__":
     version_type = sys.argv[1]
     new_version = bump_version(version_type)
     
-    print(f"\nTo create a release:")
-    print(f"1. git add pyproject.toml")
+    print("\nTo create a release:")
+    print("1. git add pyproject.toml")
     print(f"2. git commit -m 'Bump version to {new_version}'")
     print(f"3. git tag v{new_version}")
     print(f"4. git push --tags")

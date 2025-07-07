@@ -9,11 +9,6 @@ from textwrap import dedent
 import nox
 
 
-# Use regular nox instead of nox-poetry to avoid Poetry export issues
-import nox
-from nox import session
-
-
 package = "autocam"
 python_versions = ["3.10", "3.9"]
 nox.needs_version = ">= 2021.6.6"
