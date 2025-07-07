@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "autocam"
-version = "0.0.0"
+version = "1.1.0"
 description = "Autocam"
 authors = ["Petrus H Zwart <phzwart@lbl.gov>"]
 license = "MIT"
