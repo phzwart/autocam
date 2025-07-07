@@ -165,7 +165,16 @@ def coverage(session: Session) -> None:
 
     session.install("coverage[toml]")
 
-    if not session.posargs and any(Path().glob(".coverage.*")):
+    # Check if coverage files exist
+    coverage_files = list(Path().glob(".coverage.*"))
+    if not coverage_files and not session.posargs:
+        session.log("No coverage data found. Run tests first to generate coverage data.")
+        session.log("Available coverage files:")
+        for file in Path().glob(".coverage*"):
+            session.log(f"  {file}")
+        return
+
+    if not session.posargs and coverage_files:
         session.run("coverage", "combine")
 
     session.run("coverage", *args)
