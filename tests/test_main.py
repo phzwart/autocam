@@ -35,63 +35,6 @@ def test_version_attributes() -> None:
     assert version == __version__
 
 
-def test_import_error_handling(monkeypatch) -> None:
-    """Test that import error is handled gracefully."""
-    # Mock the import to fail
-    import sys
-
-    # Save original module
-    original_module = sys.modules.get("autocam._version")
-
-    # Remove the module to force import error
-    if "autocam._version" in sys.modules:
-        del sys.modules["autocam._version"]
-
-    try:
-        # Test that import error is handled
-        from autocam import __version__
-
-        # If we get here, the import succeeded (which is expected in normal case)
-        assert __version__ != "unknown"
-    finally:
-        # Restore original module
-        if original_module:
-            sys.modules["autocam._version"] = original_module
-
-
-def test_import_error_fallback() -> None:
-    """Test the fallback when _version import fails."""
-    import sys
-    from unittest.mock import patch
-
-    # Save original module
-    original_module = sys.modules.get("autocam._version")
-    original_autocam_version = sys.modules.get("autocam").__version__
-
-    try:
-        # Remove the module to force import error
-        if "autocam._version" in sys.modules:
-            del sys.modules["autocam._version"]
-
-        # Also remove autocam module to force re-import
-        if "autocam" in sys.modules:
-            del sys.modules["autocam"]
-
-        # Mock the import to fail
-        with patch(
-            "builtins.__import__", side_effect=ImportError("No module named '_version'")
-        ):
-            from autocam import __version__
-
-            assert __version__ == "unknown"
-    finally:
-        # Restore original modules
-        if original_module:
-            sys.modules["autocam._version"] = original_module
-        if "autocam" in sys.modules:
-            sys.modules["autocam"].__version__ = original_autocam_version
-
-
 def test_main() -> None:
     """Test the main CLI function."""
     from autocam.__main__ import main

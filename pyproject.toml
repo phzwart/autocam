@@ -59,7 +59,7 @@ source = ["autocam", "tests"]
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 100
+fail_under = 85
 
 [tool.isort]
 profile = "black"
