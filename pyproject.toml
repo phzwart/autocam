@@ -67,6 +67,24 @@ profile = "black"
 force_single_line = true
 lines_after_imports = 2
 
+[tool.black]
+line-length = 88
+target-version = ['py39']
+exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+  | _version\.py
+)/
+'''
+
 [tool.mypy]
 strict = true
 warn_unreachable = true
