@@ -9,6 +9,7 @@ from textwrap import dedent
 
 import nox
 from nox import session
+from nox.sessions import Session
 
 
 package = "autocam"
@@ -25,7 +26,7 @@ nox.options.sessions = (
 )
 
 
-def activate_virtualenv_in_precommit_hooks(session) -> None:
+def activate_virtualenv_in_precommit_hooks(session: Session) -> None:
     """Activate virtualenv in hooks installed by pre-commit.
 
     This function patches git hooks installed by pre-commit to activate the
@@ -100,7 +101,7 @@ def activate_virtualenv_in_precommit_hooks(session) -> None:
 
 
 @session(name="pre-commit", python=python_versions[0])
-def precommit(session) -> None:
+def precommit(session: Session) -> None:
     """Lint using pre-commit."""
     args = session.posargs or [
         "run",
@@ -128,14 +129,14 @@ def precommit(session) -> None:
 
 
 @session(python=python_versions[0])
-def safety(session) -> None:
+def safety(session: Session) -> None:
     """Scan dependencies for insecure packages."""
     session.install("safety")
     session.run("safety", "check", "--full-report")
 
 
 @session(python=python_versions)
-def mypy(session) -> None:
+def mypy(session: Session) -> None:
     """Type-check using mypy."""
     args = session.posargs or ["src", "tests", "docs/conf.py"]
     session.install(".")
@@ -146,7 +147,7 @@ def mypy(session) -> None:
 
 
 @session(python=python_versions)
-def tests(session) -> None:
+def tests(session: Session) -> None:
     """Run the test suite."""
     session.install(".")
     session.install("coverage[toml]", "pytest", "pygments")
@@ -158,7 +159,7 @@ def tests(session) -> None:
 
 
 @session(python=python_versions[0])
-def coverage(session) -> None:
+def coverage(session: Session) -> None:
     """Produce the coverage report."""
     args = session.posargs or ["report"]
 
@@ -171,7 +172,7 @@ def coverage(session) -> None:
 
 
 @session(python=python_versions[0])
-def typeguard(session) -> None:
+def typeguard(session: Session) -> None:
     """Runtime type checking using Typeguard."""
     session.install(".")
     session.install("pytest", "typeguard", "pygments")
@@ -179,7 +180,7 @@ def typeguard(session) -> None:
 
 
 @session(python=python_versions)
-def xdoctest(session) -> None:
+def xdoctest(session: Session) -> None:
     """Run examples with xdoctest."""
     if session.posargs:
         args = [package, *session.posargs]
@@ -194,7 +195,7 @@ def xdoctest(session) -> None:
 
 
 @session(name="docs-build", python=python_versions[0])
-def docs_build(session) -> None:
+def docs_build(session: Session) -> None:
     """Build the documentation."""
     args = session.posargs or ["docs", "docs/_build"]
     if not session.posargs and "FORCE_COLOR" in os.environ:
@@ -211,7 +212,7 @@ def docs_build(session) -> None:
 
 
 @session(python=python_versions[0])
-def docs(session) -> None:
+def docs(session: Session) -> None:
     """Build and serve the documentation with live reloading on file changes."""
     args = session.posargs or ["--open-browser", "docs", "docs/_build"]
     session.install(".")
