@@ -57,6 +57,28 @@ Run tests with:
 $ poetry run nox
 ```
 
+## Release Process
+
+**Important: Do NOT create or push version tags manually.**
+
+The release workflow automatically:
+
+- Detects version bumps in `pyproject.toml`
+- Creates and pushes version tags (e.g., `v1.2.3`)
+- Builds and publishes to PyPI
+- Creates GitHub releases with release notes
+
+### To create a new release:
+
+```console
+$ python scripts/bump_version.py [major|minor|patch]
+$ git add pyproject.toml
+$ git commit -m "Bump version to X.Y.Z"
+$ git push
+```
+
+**Do NOT run `git tag` or `git push --tags`.**
+
 See [Contributing] for more details.
 
 ## Usage
