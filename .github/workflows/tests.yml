@@ -52,9 +52,14 @@ jobs:
           with open(os.environ["GITHUB_ENV"], mode="a") as io:
               print(f"VIRTUALENV_PIP={pip.__version__}", file=io)
 
-      - name: Install Poetry
+      - name: Remove system Poetry (if any)
         run: |
-          pipx install poetry
+          pipx uninstall poetry || true
+          pip uninstall -y poetry || true
+
+      - name: Install Poetry >=1.9.0
+        run: |
+          pipx install poetry==1.9.0
           poetry --version
 
       - name: Install Nox
@@ -122,9 +127,14 @@ jobs:
           pip install --constraint=.github/workflows/constraints.txt pip
           pip --version
 
-      - name: Install Poetry
+      - name: Remove system Poetry (if any)
         run: |
-          pipx install poetry
+          pipx uninstall poetry || true
+          pip uninstall -y poetry || true
+
+      - name: Install Poetry >=1.9.0
+        run: |
+          pipx install poetry==1.9.0
           poetry --version
 
       - name: Install Nox
