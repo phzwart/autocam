@@ -76,4 +76,4 @@ if __name__ == "__main__":
     print(f"1. git add pyproject.toml")
     print(f"2. git commit -m 'Bump version to {new_version}'")
     print(f"3. git tag v{new_version}")
-    print(f"4. git push --tags") 
+    print(f"4. git push --tags")
