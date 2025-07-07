@@ -54,13 +54,18 @@ jobs:
       - name: Bump version for developmental release
         if: "! steps.check-version.outputs.tag"
         run: |
-          poetry version patch &&
-          version=$(poetry version | awk '{ print $2 }') &&
-          poetry version $version.dev.$(date +%s)
+          poetry version patch
+          version=$(poetry version | awk '{ print $2 }')
+          dev_version="${version}.dev.$(date +%s)"
+          poetry version "$dev_version"
+          echo "Set developmental version to: $dev_version"
 
       - name: Show version in pyproject.toml
         run: |
+          echo "Current version in pyproject.toml:"
           grep '^version = ' pyproject.toml
+          echo "Full pyproject.toml content:"
+          cat pyproject.toml
 
       - name: Clean build artifacts
         run: rm -rf dist/ build/
