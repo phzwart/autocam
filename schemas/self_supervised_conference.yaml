@@ -1,0 +1,98 @@
+conference:
+  name: "Self_Supervised_Representation_Learning_Conference"
+  description: "A conference for self-supervised representation learning with dynamic student-target role switching"
+  participants:
+    # All models can act as both students and targets - they switch roles dynamically
+    - name: "model_cnn_2d"
+      model_type: "cnn"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        layers: 4
+        kernel_size: 3
+        activation: "relu"
+
+    - name: "model_vit_2d"
+      model_type: "vit"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        patch_size: 16
+        embed_dim: 128
+        num_heads: 8
+
+    - name: "model_custom_2d"
+      model_type: "custom"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        architecture: "resnet_variant"
+        hidden_dims: [64, 128, 256]
+
+  parallel_sessions:
+    # Session 1: CNN learns from ViT, ViT learns from Custom
+    - name: "Session_1_Cross_Architecture_Learning"
+      description: "Models learn from different architectures"
+      training_epochs: 100
+      working_groups:
+        - name: "Cross_Architecture_Group"
+          description: "CNN learns from ViT, ViT learns from Custom"
+          participants: ["model_cnn_2d", "model_vit_2d", "model_custom_2d"]
+          student_participants: ["model_cnn_2d", "model_vit_2d"]
+          target_participants: ["model_vit_2d", "model_custom_2d"]
+          training_epochs: 100
+
+    # Session 2: All models learn from each other in a cycle
+    - name: "Session_2_Cyclic_Learning"
+      description: "All models learn from each other in a cyclic pattern"
+      training_epochs: 100
+      working_groups:
+        - name: "Cyclic_Learning_Group"
+          description: "CNN->ViT->Custom->CNN cyclic learning"
+          participants: ["model_cnn_2d", "model_vit_2d", "model_custom_2d"]
+          student_participants:
+            ["model_cnn_2d", "model_vit_2d", "model_custom_2d"]
+          target_participants:
+            ["model_vit_2d", "model_custom_2d", "model_cnn_2d"]
+          training_epochs: 100
+
+    # Session 3: Ensemble learning - each model learns from the ensemble of others
+    - name: "Session_3_Ensemble_Learning"
+      description: "Each model learns from the ensemble of all other models"
+      training_epochs: 100
+      working_groups:
+        - name: "Ensemble_Learning_Group"
+          description: "Each model learns from ensemble of others"
+          participants: ["model_cnn_2d", "model_vit_2d", "model_custom_2d"]
+          student_participants:
+            ["model_cnn_2d", "model_vit_2d", "model_custom_2d"]
+          target_participants:
+            ["model_vit_2d", "model_custom_2d", "model_cnn_2d"]
+          training_epochs: 100
+
+    # Session 4: Final convergence - all models learn from all models
+    - name: "Session_4_Final_Convergence"
+      description: "All models learn from all models for final convergence"
+      training_epochs: 200
+      working_groups:
+        - name: "Final_Convergence_Group"
+          description: "All models learn from all models"
+          participants: ["model_cnn_2d", "model_vit_2d", "model_custom_2d"]
+          student_participants:
+            ["model_cnn_2d", "model_vit_2d", "model_custom_2d"]
+          target_participants:
+            ["model_cnn_2d", "model_vit_2d", "model_custom_2d"]
+          training_epochs: 200
+
+metadata:
+  version: "1.0.0"
+  created_by: "autocam"
+  learning_objective: "self_supervised_representation_learning"
+  convergence_strategy: "dynamic_student_target_switching"
+  role_switching: "every_model_can_be_student_and_target"

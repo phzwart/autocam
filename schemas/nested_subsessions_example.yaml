@@ -1,0 +1,151 @@
+conference:
+  name: "Nested_Subsessions_Conference"
+  description: "A conference demonstrating nested parallel sessions with subsessions (ballrooms)"
+  participants:
+    # Models for Tuesday Morning
+    - name: "model_cnn_tuesday"
+      model_type: "cnn"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        layers: 4
+        kernel_size: 3
+
+    - name: "model_vit_tuesday"
+      model_type: "vit"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        patch_size: 16
+        embed_dim: 128
+
+    - name: "model_custom_tuesday"
+      model_type: "custom"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        architecture: "resnet_variant"
+
+    # Models for Tuesday Afternoon
+    - name: "model_mlp_tuesday"
+      model_type: "custom"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        architecture: "mlp"
+
+    - name: "model_transformer_tuesday"
+      model_type: "vit"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        patch_size: 8
+        embed_dim: 128
+
+    # Models for Wednesday
+    - name: "model_cnn_wednesday"
+      model_type: "cnn"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        layers: 6
+        kernel_size: 5
+
+    - name: "model_vit_wednesday"
+      model_type: "vit"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        patch_size: 32
+        embed_dim: 128
+
+  parallel_sessions:
+    # Tuesday Morning - Parent session with subsessions (ballrooms)
+    - name: "Tuesday_Morning"
+      description: "Tuesday morning parallel sessions"
+      training_epochs: 100
+      subsessions:
+        # Ballroom A - CNN vs ViT
+        - name: "Ballroom_A"
+          description: "CNN vs ViT training"
+          working_groups:
+            - name: "CNN_vs_ViT_Group"
+              description: "CNN trains against ViT"
+              participants: ["model_cnn_tuesday", "model_vit_tuesday"]
+              training_mandate: "one_vs_one"
+              student_participants: ["model_cnn_tuesday"]
+              target_participants: ["model_vit_tuesday"]
+              training_epochs: 50
+
+        # Ballroom B - Custom model with barycentric targets
+        - name: "Ballroom_B"
+          description: "Custom model with barycentric targets"
+          working_groups:
+            - name: "Custom_Barycentric_Group"
+              description: "Custom model trains against barycentric combinations"
+              participants: ["model_custom_tuesday"]
+              training_mandate: "barycentric_targets"
+              student_participants: ["model_custom_tuesday"]
+              barycentric_min_models: 2
+              barycentric_max_models: 3
+              training_epochs: 50
+
+    # Tuesday Afternoon - Parent session with subsessions
+    - name: "Tuesday_Afternoon"
+      description: "Tuesday afternoon parallel sessions"
+      training_epochs: 100
+      subsessions:
+        # Ballroom C - MLP vs Transformer
+        - name: "Ballroom_C"
+          description: "MLP vs Transformer training"
+          working_groups:
+            - name: "MLP_vs_Transformer_Group"
+              description: "MLP trains against Transformer"
+              participants: ["model_mlp_tuesday", "model_transformer_tuesday"]
+              training_mandate: "one_vs_one"
+              student_participants: ["model_mlp_tuesday"]
+              target_participants: ["model_transformer_tuesday"]
+              training_epochs: 50
+
+        # Ballroom D - Random pairs
+        - name: "Ballroom_D"
+          description: "Random pairs training"
+          working_groups:
+            - name: "Random_Pairs_Group"
+              description: "Random student-target pairs"
+              participants: ["model_mlp_tuesday", "model_transformer_tuesday"]
+              training_mandate: "random_pairs"
+              training_epochs: 50
+
+    # Wednesday - Simple session without subsessions
+    - name: "Wednesday_Morning"
+      description: "Wednesday morning session (no subsessions)"
+      training_epochs: 100
+      working_groups:
+        - name: "Wednesday_Group"
+          description: "CNN vs ViT on Wednesday"
+          participants: ["model_cnn_wednesday", "model_vit_wednesday"]
+          training_mandate: "one_vs_fixed"
+          student_participants: ["model_cnn_wednesday"]
+          fixed_target: "model_vit_wednesday"
+          training_epochs: 100
+
+metadata:
+  version: "1.0.0"
+  created_by: "autocam"
+  description: "Example demonstrating nested subsessions structure"
+  note: "Each model can only appear in one subsession per parent session"

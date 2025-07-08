@@ -75,31 +75,62 @@ def run(yaml_file: str) -> None:
         raise click.Abort() from e
 
 
+def print_session_info(session, indent=0):
+    """Print detailed information about a session."""
+    prefix = "  " * indent
+    click.echo(f"{prefix}- {session.name}")
+    if session.description:
+        click.echo(f"{prefix}  Description: {session.description}")
+    if session.training_epochs:
+        click.echo(f"{prefix}  Training epochs: {session.training_epochs}")
+    if session.working_groups:
+        for wg in session.working_groups:
+            click.echo(f"{prefix}  Working Group: {wg.name}")
+            if wg.description:
+                click.echo(f"{prefix}    Description: {wg.description}")
+            click.echo(f"{prefix}    Participants: {', '.join(wg.participants)}")
+            click.echo(f"{prefix}    Training Mandate: {wg.training_mandate}")
+            if wg.student_participants:
+                click.echo(
+                    f"{prefix}    Students: {', '.join(wg.student_participants)}"
+                )
+            if wg.target_participants:
+                click.echo(f"{prefix}    Targets: {', '.join(wg.target_participants)}")
+            if wg.fixed_target:
+                click.echo(f"{prefix}    Fixed Target: {wg.fixed_target}")
+            if wg.random_mean_count:
+                click.echo(f"{prefix}    Random Mean Count: {wg.random_mean_count}")
+            if wg.barycentric_min_models and wg.barycentric_max_models:
+                click.echo(
+                    f"{prefix}    Barycentric Models: "
+                    f"{wg.barycentric_min_models}-{wg.barycentric_max_models}"
+                )
+            if wg.training_epochs:
+                click.echo(f"{prefix}    Training epochs: {wg.training_epochs}")
+    if session.subsessions:
+        click.echo(f"{prefix}  Subsessions:")
+        for subsession in session.subsessions:
+            print_session_info(subsession, indent + 2)
+
+
 @main.command()
 @click.argument("yaml_file", type=click.Path(exists=True))
 def info(yaml_file: str) -> None:
     """Show information about a conference configuration."""
     try:
         config = load_conference_config(yaml_file)
-        click.echo(f"Conference: {config.conference.name}")
-        if config.conference.description:
-            click.echo(f"Description: {config.conference.description}")
-        click.echo(f"\nParticipants ({len(config.conference.participants)}):")
-        for participant in config.conference.participants:
+        click.echo(f"Conference: {config.name}")
+        if config.description:
+            click.echo(f"Description: {config.description}")
+        click.echo(f"\nParticipants ({len(config.participants)}):")
+        for participant in config.participants:
             click.echo(
                 f"  - {participant.name} ({participant.model_tag}, "
                 f"{participant.dimension})"
             )
-        click.echo(f"\nParallel Sessions ({len(config.conference.parallel_sessions)}):")
-        for session in config.conference.parallel_sessions:
-            click.echo(f"  - {session.name}")
-            if session.description:
-                click.echo(f"    Description: {session.description}")
-            for wg in session.working_groups:
-                click.echo(f"    Working Group: {wg.name}")
-                if wg.description:
-                    click.echo(f"      Description: {wg.description}")
-                click.echo(f"      Participants: {', '.join(wg.participants)}")
+        click.echo("\nParallel Sessions:")
+        for session in config.parallel_sessions:
+            print_session_info(session, indent=1)
     except Exception as e:
         click.echo(f"❌ Error reading configuration: {e}")
         raise click.Abort() from e

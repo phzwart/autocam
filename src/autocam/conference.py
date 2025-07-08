@@ -68,11 +68,10 @@ class Conference:
     def __init__(self, yaml_path: str):
         """Initialize conference from YAML file."""
         self.config = load_conference_config(yaml_path)
-        self.name = self.config.conference.name
+        self.name = self.config.name
         self.registry = ParticipantRegistry()
 
         # Validate the configuration
-        self.config.validate_config()
         enforce_working_group_constraints(self.config)
 
     def register_participant(
@@ -91,16 +90,23 @@ class Conference:
 
     def get_working_group(self, session_name: str, group_name: str):
         """Get a working group by session and group name."""
-        for session in self.config.conference.parallel_sessions:
+        for session in self.config.parallel_sessions:
             if session.name == session_name:
                 for wg in session.working_groups:
                     if wg.name == group_name:
                         return wg
         return None
 
+    def get_session(self, session_name: str):
+        """Get a session by name."""
+        for session in self.config.parallel_sessions:
+            if session.name == session_name:
+                return session
+        return None
+
     def get_session_participants(self, session_name: str) -> List[ModelInterface]:
         """Get all participants in a session."""
-        for session in self.config.conference.parallel_sessions:
+        for session in self.config.parallel_sessions:
             if session.name == session_name:
                 participants = []
                 for wg in session.working_groups:
@@ -129,7 +135,7 @@ class Conference:
     def validate_registration(self) -> bool:
         """Validate that all expected participants are registered."""
         expected_participants = set()
-        for session in self.config.conference.parallel_sessions:
+        for session in self.config.parallel_sessions:
             for wg in session.working_groups:
                 expected_participants.update(wg.participants)
 
@@ -143,15 +149,15 @@ class Conference:
 
     def list_sessions(self) -> List[str]:
         """List all session names."""
-        return [session.name for session in self.config.conference.parallel_sessions]
+        return [session.name for session in self.config.parallel_sessions]
 
     def list_participants(self) -> List[str]:
         """List all participant names."""
-        return [p.name for p in self.config.conference.participants]
+        return [p.name for p in self.config.participants]
 
     def get_participant_config(self, name: str):
         """Get participant configuration by name."""
-        for participant in self.config.conference.participants:
+        for participant in self.config.participants:
             if participant.name == name:
                 return participant
         return None

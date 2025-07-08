@@ -21,7 +21,14 @@ def load_conference_config(yaml_path: str) -> ConferenceConfig:
     """Load a conference configuration from a YAML file."""
     with open(yaml_path) as f:
         data = yaml.safe_load(f)
-    return ConferenceConfig(**data)
+
+    # Handle nested conference structure
+    if "conference" in data:
+        conference_data = data["conference"]
+    else:
+        conference_data = data
+
+    return ConferenceConfig(**conference_data)
 
 
 def save_conference_config(config: ConferenceConfig, yaml_path: str) -> None:
@@ -32,41 +39,78 @@ def save_conference_config(config: ConferenceConfig, yaml_path: str) -> None:
         yaml.dump(data, f, default_flow_style=False, indent=2)
 
 
-def enforce_working_group_constraints(config: ConferenceConfig) -> None:
-    """Enforce that all models in a working group have the same in_channels.
+def enforce_no_duplicate_participants_in_subsessions(session, participants_by_name):
+    """Ensure no participant appears in more than one direct subsession of a parent session."""
+    if session.subsessions:
+        # For each direct subsession, collect all participants
+        subsession_participants = []
+        for subsession in session.subsessions:
+            models_in_subsession = set()
+            if subsession.working_groups:
+                for wg in subsession.working_groups:
+                    models_in_subsession.update(wg.participants)
+            subsession_participants.append(models_in_subsession)
+        # Check for overlap between any two subsessions
+        for i in range(len(subsession_participants)):
+            for j in range(i + 1, len(subsession_participants)):
+                overlap = subsession_participants[i] & subsession_participants[j]
+                if overlap:
+                    raise ValueError(
+                        f"Duplicate participant(s) {overlap} found in multiple subsessions of session {session.name!r}"
+                    )
+        # Recursively check nested subsessions
+        for subsession in session.subsessions:
+            enforce_no_duplicate_participants_in_subsessions(
+                subsession, participants_by_name
+            )
+    elif session.working_groups:
+        # No subsessions, nothing to check at this level
+        return
 
-    out_channels, and model_tag.
+
+def enforce_working_group_constraints(config):
+    """Enforce that all models in a working group have the same in_channels, out_channels, and model_tag.
+
+    Also enforce no duplicate participants in subsessions.
     """
-    participants_by_name = {p.name: p for p in config.conference.participants}
-    for session in config.conference.parallel_sessions:
-        for wg in session.working_groups:
-            if not wg.participants:
-                continue
-            # Get the reference participant
-            ref = participants_by_name[wg.participants[0]]
-            ref_in = ref.in_channels
-            ref_out = ref.out_channels
-            ref_tag = ref.model_tag
-            for pname in wg.participants[1:]:
-                p = participants_by_name[pname]
-                if p.in_channels != ref_in:
-                    raise ValueError(
-                        f"Working group {wg.name!r} in session {session.name!r}: "
-                        f"All models must have the same in_channels. "
-                        f"{p.name!r} has {p.in_channels}, expected {ref_in}."
-                    )
-                if p.out_channels != ref_out:
-                    raise ValueError(
-                        f"Working group {wg.name!r} in session {session.name!r}: "
-                        f"All models must have the same out_channels. "
-                        f"{p.name!r} has {p.out_channels}, expected {ref_out}."
-                    )
-                if p.model_tag != ref_tag:
-                    raise ValueError(
-                        f"Working group {wg.name!r} in session {session.name!r}: "
-                        f"All models must have the same model_tag. "
-                        f"{p.name!r} has {p.model_tag!r}, expected {ref_tag!r}."
-                    )
+    participants_by_name = {p.name: p for p in config.participants}
+
+    def check_groups(session):
+        if session.working_groups:
+            for wg in session.working_groups:
+                if not wg.participants:
+                    continue
+                ref = participants_by_name[wg.participants[0]]
+                ref_in = ref.in_channels
+                ref_out = ref.out_channels
+                ref_tag = ref.model_tag
+                for pname in wg.participants[1:]:
+                    p = participants_by_name[pname]
+                    if p.in_channels != ref_in:
+                        raise ValueError(
+                            f"Working group {wg.name!r} in session {session.name!r}: "
+                            f"All models must have the same in_channels. "
+                            f"{p.name!r} has {p.in_channels}, expected {ref_in}."
+                        )
+                    if p.out_channels != ref_out:
+                        raise ValueError(
+                            f"Working group {wg.name!r} in session {session.name!r}: "
+                            f"All models must have the same out_channels. "
+                            f"{p.name!r} has {p.out_channels}, expected {ref_out}."
+                        )
+                    if p.model_tag != ref_tag:
+                        raise ValueError(
+                            f"Working group {wg.name!r} in session {session.name!r}: "
+                            f"All models must have the same model_tag. "
+                            f"{p.name!r} has {p.model_tag!r}, expected {ref_tag!r}."
+                        )
+        if session.subsessions:
+            for subsession in session.subsessions:
+                check_groups(subsession)
+
+    for session in config.parallel_sessions:
+        check_groups(session)
+        enforce_no_duplicate_participants_in_subsessions(session, participants_by_name)
 
 
 def validate_yaml_schema(yaml_path: str) -> bool:
@@ -76,7 +120,6 @@ def validate_yaml_schema(yaml_path: str) -> bool:
     """
     try:
         config = load_conference_config(yaml_path)
-        config.validate_config()
         enforce_working_group_constraints(config)
         return True
     except Exception as e:

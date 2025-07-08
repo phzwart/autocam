@@ -1,0 +1,60 @@
+conference:
+  name: "Invalid_Nested_Example"
+  description: "This should fail validation - same model in multiple subsessions"
+  participants:
+    - name: "model_cnn"
+      model_type: "cnn"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        layers: 4
+
+    - name: "model_vit"
+      model_type: "vit"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        patch_size: 16
+
+    - name: "model_custom"
+      model_type: "custom"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        architecture: "resnet"
+
+  parallel_sessions:
+    - name: "Tuesday_Morning"
+      description: "Tuesday morning with invalid duplicate participants"
+      subsessions:
+        # Ballroom A - model_cnn appears here
+        - name: "Ballroom_A"
+          description: "Ballroom A with model_cnn"
+          working_groups:
+            - name: "Group_A"
+              description: "Group A with model_cnn"
+              participants: ["model_cnn", "model_vit"]
+              training_mandate: "one_vs_one"
+              student_participants: ["model_cnn"]
+              target_participants: ["model_vit"]
+
+        # Ballroom B - model_cnn also appears here (INVALID!)
+        - name: "Ballroom_B"
+          description: "Ballroom B with model_cnn (duplicate!)"
+          working_groups:
+            - name: "Group_B"
+              description: "Group B with model_cnn (duplicate!)"
+              participants: ["model_cnn", "model_custom"]
+              training_mandate: "one_vs_one"
+              student_participants: ["model_cnn"]
+              target_participants: ["model_custom"]
+
+metadata:
+  version: "1.0.0"
+  created_by: "autocam"

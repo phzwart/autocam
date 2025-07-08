@@ -1,0 +1,124 @@
+conference:
+  name: "Training_Mandates_Conference"
+  description: "A conference demonstrating different training mandates for self-supervised learning"
+  participants:
+    # All models can act as both students and targets
+    - name: "model_cnn_2d"
+      model_type: "cnn"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        layers: 4
+        kernel_size: 3
+        activation: "relu"
+
+    - name: "model_vit_2d"
+      model_type: "vit"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        patch_size: 16
+        embed_dim: 128
+        num_heads: 8
+
+    - name: "model_custom_2d"
+      model_type: "custom"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        architecture: "resnet_variant"
+        hidden_dims: [64, 128, 256]
+
+    - name: "model_mlp_2d"
+      model_type: "custom"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 128
+      dimension: "2D"
+      config:
+        architecture: "mlp"
+        hidden_layers: [256, 128]
+
+  parallel_sessions:
+    # Session 1: One vs One training
+    - name: "Session_1_One_vs_One"
+      description: "Models train against specific other models"
+      training_epochs: 100
+      working_groups:
+        - name: "One_vs_One_Group"
+          description: "CNN trains against ViT, ViT trains against Custom"
+          participants: ["model_cnn_2d", "model_vit_2d", "model_custom_2d"]
+          training_mandate: "one_vs_one"
+          student_participants: ["model_cnn_2d", "model_vit_2d"]
+          target_participants: ["model_vit_2d", "model_custom_2d"]
+          training_epochs: 100
+
+    # Session 2: One vs Random Mean
+    - name: "Session_2_One_vs_Random_Mean"
+      description: "Models train against mean of random model combinations"
+      training_epochs: 100
+      working_groups:
+        - name: "Random_Mean_Group"
+          description: "Each model trains against mean of 2-3 random other models"
+          participants:
+            ["model_cnn_2d", "model_vit_2d", "model_custom_2d", "model_mlp_2d"]
+          training_mandate: "one_vs_random_mean"
+          student_participants:
+            ["model_cnn_2d", "model_vit_2d", "model_custom_2d", "model_mlp_2d"]
+          random_mean_count: 3
+          training_epochs: 100
+
+    # Session 3: One vs Fixed Target
+    - name: "Session_3_One_vs_Fixed"
+      description: "All models train against a fixed target model"
+      training_epochs: 100
+      working_groups:
+        - name: "Fixed_Target_Group"
+          description: "All models train against the ViT as fixed target"
+          participants:
+            ["model_cnn_2d", "model_custom_2d", "model_mlp_2d", "model_vit_2d"]
+          training_mandate: "one_vs_fixed"
+          student_participants:
+            ["model_cnn_2d", "model_custom_2d", "model_mlp_2d"]
+          fixed_target: "model_vit_2d"
+          training_epochs: 100
+
+    # Session 4: Random Pairs
+    - name: "Session_4_Random_Pairs"
+      description: "Random student-target pairs each batch"
+      training_epochs: 100
+      working_groups:
+        - name: "Random_Pairs_Group"
+          description: "Random student-target assignment each batch"
+          participants:
+            ["model_cnn_2d", "model_vit_2d", "model_custom_2d", "model_mlp_2d"]
+          training_mandate: "random_pairs"
+          training_epochs: 100
+
+    # Session 5: Barycentric Targets
+    - name: "Session_5_Barycentric_Targets"
+      description: "Random barycentric combinations as targets"
+      training_epochs: 100
+      working_groups:
+        - name: "Barycentric_Group"
+          description: "Random barycentric combinations of 2-4 models as targets"
+          participants:
+            ["model_cnn_2d", "model_vit_2d", "model_custom_2d", "model_mlp_2d"]
+          training_mandate: "barycentric_targets"
+          student_participants:
+            ["model_cnn_2d", "model_vit_2d", "model_custom_2d", "model_mlp_2d"]
+          barycentric_min_models: 2
+          barycentric_max_models: 4
+          training_epochs: 100
+
+metadata:
+  version: "1.0.0"
+  created_by: "autocam"
+  learning_objective: "demonstrate_training_mandates"
+  description: "Example showing different training mandate configurations"
