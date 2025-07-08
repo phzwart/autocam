@@ -19,6 +19,9 @@ Changelog = "https://github.com/phzwart/autocam/releases"
 python = "^3.9"
 click = ">=8.0.1"
 wheel = ">=0.38.1"
+pydantic = "^2.5.0"
+pyyaml = "^6.0"
+jinja2 = "^3.0.0"
 
 [tool.poetry.group.dev.dependencies]
 Pygments = ">=2.10.0"

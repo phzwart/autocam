@@ -1,0 +1,96 @@
+# Participant Schema Definition
+# This file defines the structure for participant configurations
+
+participant:
+  name: "string" # Unique identifier for the participant
+  model_type: "cnn|vit|custom" # Type of neural network model (only these are allowed)
+  model_tag: "string" # Tag for grouping models (must match within a working group)
+  in_channels: "integer" # Number of input channels
+  out_channels: "integer" # Number of output channels
+  dimension: "2D|3D" # 2D or 3D model
+  config: "object (optional)" # Additional model configuration parameters
+
+# Model Type Definitions
+model_types:
+  cnn:
+    description: "Convolutional Neural Network"
+    config_example:
+      layers: "integer"
+      kernel_size: "integer"
+      activation: "string (optional)"
+
+  vit:
+    description: "Vision Transformer"
+    config_example:
+      patch_size: "integer"
+      num_heads: "integer"
+      num_layers: "integer"
+      hidden_size: "integer"
+
+  custom:
+    description: "Custom model implementation"
+    config_example:
+      # Any custom configuration parameters
+      custom_param: "any_type"
+
+# Dimension Definitions
+dimensions:
+  "2D":
+    description: "2D models for image processing"
+    examples: ["images", "spectrograms", "heatmaps"]
+
+  "3D":
+    description: "3D models for volume processing"
+    examples: ["volumes", "point_clouds", "videos"]
+
+# Validation Rules
+validation_rules:
+  - "name must be unique within a conference"
+  - "name cannot be empty"
+  - "model_tag cannot be empty (must match within a working group)"
+  - "in_channels must be positive (must match within a working group)"
+  - "out_channels must be positive (must match within a working group)"
+  - "dimension must be either '2D' or '3D'"
+  - "model_type must be one of: cnn, vit, custom"
+
+# Working Group Constraints
+# All models in a working group must have:
+# - the same number of input channels
+# - the same number of output channels
+# - the same model_tag
+
+# Example Participant Configurations
+examples:
+  cnn_2d:
+    name: "encoder_2d"
+    model_type: "cnn"
+    model_tag: "encoder"
+    in_channels: 3
+    out_channels: 64
+    dimension: "2D"
+    config:
+      layers: 3
+      kernel_size: 3
+
+  vit_2d:
+    name: "vit_2d"
+    model_type: "vit"
+    model_tag: "encoder"
+    in_channels: 3
+    out_channels: 64
+    dimension: "2D"
+    config:
+      patch_size: 16
+      num_heads: 8
+      num_layers: 6
+      hidden_size: 512
+
+  custom_classifier:
+    name: "custom_classifier"
+    model_type: "custom"
+    model_tag: "classifier"
+    in_channels: 64
+    out_channels: 10
+    dimension: "2D"
+    config:
+      custom_param: "value"

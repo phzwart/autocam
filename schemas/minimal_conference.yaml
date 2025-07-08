@@ -1,0 +1,23 @@
+conference:
+  name: "Minimal_Conference"
+  description: "A minimal conference with just one participant and session"
+  participants:
+    - name: "simple_model"
+      model_type: "mlp"
+      model_tag: "classifier"
+      in_channels: 10
+      out_channels: 2
+      dimension: "2D"
+
+  parallel_sessions:
+    - name: "Single_Session"
+      description: "A single session with one working group"
+      working_groups:
+        - name: "Single_Group"
+          description: "A single working group"
+          participants: ["simple_model"]
+
+metadata:
+  version: "1.0.0"
+  created_by: "autocam"
+  description: "Minimal example configuration"

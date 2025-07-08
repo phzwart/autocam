@@ -1,0 +1,35 @@
+# Conference Schema Definition
+# This file defines the structure for conference configurations
+# See participant_schema.yaml for detailed participant structure
+# See session_schema.yaml for detailed session and working group structure
+
+conference:
+  name: "string" # Name of the conference
+  description: "string (optional)" # Description of the conference
+  participants:
+    # List of participant objects
+    # See participant_schema.yaml for detailed structure
+    - name: "string" # Unique identifier for the participant
+      model_type: "cnn|resnet|vit|transformer|mlp|custom" # Type of neural network model
+      model_tag: "string" # Description of what this model is for
+      in_channels: "integer" # Number of input channels
+      out_channels: "integer" # Number of output channels
+      dimension: "2D|3D" # 2D or 3D model
+      config: "object (optional)" # Additional model configuration parameters
+
+  parallel_sessions:
+    # List of parallel session objects
+    # See session_schema.yaml for detailed structure
+    - name: "string" # Name of the parallel session
+      description: "string (optional)" # Description of the parallel session
+      working_groups:
+        # List of working group objects
+        # See session_schema.yaml for detailed structure
+        - name: "string" # Name of the working group
+          description: "string (optional)" # Description of the working group
+          participants: ["string", "string", ...] # List of participant names in this group
+
+metadata:
+  version: "string (optional)" # Version of the configuration
+  created_by: "string (optional)" # Who created this configuration
+  description: "string (optional)" # Additional description

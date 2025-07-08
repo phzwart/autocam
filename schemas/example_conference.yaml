@@ -1,0 +1,113 @@
+conference:
+  name: "Representation_Learning_Conference"
+  description: "A conference for representation learning experiments"
+  participants:
+    - name: "encoder_2d"
+      model_type: "cnn"
+      model_tag: "encoder"
+      in_channels: 3
+      out_channels: 64
+      dimension: "2D"
+      config:
+        layers: 3
+        kernel_size: 3
+
+    - name: "encoder_3d"
+      model_type: "cnn"
+      model_tag: "encoder"
+      in_channels: 1
+      out_channels: 32
+      dimension: "3D"
+      config:
+        layers: 4
+        kernel_size: 3
+
+    - name: "classifier_2d"
+      model_type: "custom"
+      model_tag: "classifier"
+      in_channels: 64
+      out_channels: 10
+      dimension: "2D"
+      config:
+        hidden_layers: [128, 64]
+
+    - name: "classifier_3d"
+      model_type: "custom"
+      model_tag: "classifier"
+      in_channels: 32
+      out_channels: 5
+      dimension: "3D"
+      config:
+        hidden_layers: [64, 32]
+
+    - name: "transformer_2d"
+      model_type: "vit"
+      model_tag: "attention"
+      in_channels: 64
+      out_channels: 64
+      dimension: "2D"
+      config:
+        num_heads: 8
+        num_layers: 6
+
+    - name: "transformer_3d"
+      model_type: "vit"
+      model_tag: "attention"
+      in_channels: 32
+      out_channels: 32
+      dimension: "3D"
+      config:
+        num_heads: 4
+        num_layers: 4
+
+  parallel_sessions:
+    - name: "Processing_Pipelines"
+      description: "Complete processing pipelines for 2D and 3D data"
+      working_groups:
+        - name: "2D_Encoder_Group"
+          description: "2D image encoders"
+          participants: ["encoder_2d"]
+
+        - name: "2D_Transformer_Group"
+          description: "2D transformers"
+          participants: ["transformer_2d"]
+
+        - name: "2D_Classifier_Group"
+          description: "2D classifiers"
+          participants: ["classifier_2d"]
+
+        - name: "3D_Encoder_Group"
+          description: "3D volume encoders"
+          participants: ["encoder_3d"]
+
+        - name: "3D_Transformer_Group"
+          description: "3D transformers"
+          participants: ["transformer_3d"]
+
+        - name: "3D_Classifier_Group"
+          description: "3D classifiers"
+          participants: ["classifier_3d"]
+
+    - name: "Model_Comparison"
+      description: "Comparison of similar model types across dimensions"
+      working_groups:
+        - name: "2D_Encoder_Group"
+          description: "2D feature extraction models"
+          participants: ["encoder_2d"]
+
+        - name: "3D_Encoder_Group"
+          description: "3D feature extraction models"
+          participants: ["encoder_3d"]
+
+        - name: "2D_Classifier_Group"
+          description: "2D classification models"
+          participants: ["classifier_2d"]
+
+        - name: "3D_Classifier_Group"
+          description: "3D classification models"
+          participants: ["classifier_3d"]
+
+metadata:
+  version: "1.0.0"
+  created_by: "autocam"
+  description: "Example configuration for representation learning"
