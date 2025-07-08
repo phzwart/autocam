@@ -16,7 +16,6 @@ from autocam.orchestrator import AutocamDaskOrchestrator
 
 class DummyModel(nn.Module):
     """Dummy model for demonstration."""
-
     def __init__(self, in_channels: int, out_channels: int, **kwargs):
         """Initialize dummy model."""
         super().__init__()
@@ -43,7 +42,6 @@ def create_dummy_dataloader(batch_size: int = 32, num_batches: int = 10):
 
 def create_optimizer_factory(learning_rate: float = 0.001):
     """Create optimizer factory function."""
-
     def optimizer_factory(model):
         return optim.Adam(model.parameters(), lr=learning_rate)
 
@@ -52,7 +50,6 @@ def create_optimizer_factory(learning_rate: float = 0.001):
 
 def create_loss_function():
     """Create loss function for self-supervised learning."""
-
     def loss_fn(student_output, target_output):
         # Simple MSE loss between student and target outputs
         return nn.MSELoss()(student_output, target_output)
@@ -68,7 +65,6 @@ def create_dask_client():
 
 def main():
     """Run the Dask + PyTorch integration example."""
-
     # Load conference configuration
     config_path = Path("schemas/training_mandates_conference.yaml")
     with open(config_path) as f:

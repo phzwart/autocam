@@ -12,10 +12,15 @@ from .trainer import DynamicSelfSupervisedTrainer
 
 
 class AutocamDaskOrchestrator:
-    """Orchestrates conference execution using Dask for resource management and PyTorch for training.
+    """Orchestrates conference execution.
 
-    This class manages the execution of a conference using Dask for resource
-    management and PyTorch for training.
+    This class manages the execution of a conference using Dask
+    for resource management and PyTorch for training.
+
+    Attributes:
+        n_workers: Number of Dask workers
+        gpus_per_worker: GPUs per worker
+        gpu_memory_limit: Memory limit per GPU
     """
 
     def __init__(

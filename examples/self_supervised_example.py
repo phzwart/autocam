@@ -21,8 +21,8 @@ class SelfSupervisedModel(ModelInterface):
         self.current_role = None  # Will be set dynamically by the conference
         self.epochs_trained = 0
 
-        # Initialize random weights (in real implementation, this would be actual model weights)
-        self.weights = np.random.randn(*output_shape)
+        # Initialize random weights
+        self.weights = np.random.randn(*output_shape)  #  nosec
 
     def forward(self, x):
         """Forward pass - simulates model inference."""
@@ -47,8 +47,8 @@ class SelfSupervisedModel(ModelInterface):
     def train_epoch(self, target_outputs=None):
         """Train for one epoch using target outputs as supervision."""
         if self.current_role == "student" and target_outputs is not None:
-            # Simulate training update (in real implementation, this would be actual training)
-            self.weights += 0.01 * np.random.randn(*self.weights.shape)
+            # Simulate training update
+            self.weights += 0.01 * np.random.randn(*self.weights.shape)  # nosec
             self.epochs_trained += 1
             return f"Trained {self.name} (student) for epoch {self.epochs_trained}"
         elif self.current_role == "target":

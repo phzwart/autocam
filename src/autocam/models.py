@@ -59,7 +59,21 @@ class Participant(BaseModel):
 
 
 class WorkingGroup(BaseModel):
-    """A working group within a parallel session."""
+    """A working group within a parallel session.
+
+    Attributes:
+        name: Name of the working group.
+        description: Description of the working group.
+        participants: List of participant names.
+        training_mandate: Training mandate for this working group.
+        training_epochs: Training epochs for this working group.
+        student_participants: Participants acting as students in this session.
+        target_participants: Participants acting as targets in this session.
+        fixed_target: Fixed target model for ONE_VS_FIXED mandate.
+        random_mean_count: Number of models to use in random mean.
+        barycentric_min_models: Minimum number of models for barycentric combinations.
+        barycentric_max_models: Maximum number of models for barycentric combinations.
+    """
 
     model_config = {"protected_namespaces": ()}
 
@@ -67,7 +81,8 @@ class WorkingGroup(BaseModel):
     description: str = Field(..., description="Description of the working group")
     participants: List[str] = Field(..., description="List of participant names")
     training_mandate: TrainingMandate = Field(
-        ..., description="Training mandate for this working group"
+        ...,
+        description="Training mandate for this working group"
     )
     training_epochs: Optional[int] = Field(
         default=100, description="Training epochs for this working group"
@@ -78,14 +93,16 @@ class WorkingGroup(BaseModel):
         default=None, description="Participants acting as students in this session"
     )
     target_participants: Optional[List[str]] = Field(
-        default=None, description="Participants acting as targets in this session"
+        default=None,
+        description="Participants acting as targets in this session"
     )
     fixed_target: Optional[str] = Field(
         default=None, description="Fixed target model for ONE_VS_FIXED mandate"
     )
     random_mean_count: Optional[int] = Field(
         default=2,
-        description="Number of models to use in random mean for ONE_VS_RANDOM_MEAN",
+        description="Number of models to use in random mean for "
+        "ONE_VS_RANDOM_MEAN",
     )
     barycentric_min_models: Optional[int] = Field(
         default=2,
@@ -98,7 +115,7 @@ class WorkingGroup(BaseModel):
 
 
 class ParallelSession(BaseModel):
-    """A parallel session in the conference. Can contain working groups or nested subsessions."""
+    """A parallel session in the conference. Can contain multiple working groups."""
 
     model_config = {"protected_namespaces": ()}
 
@@ -121,14 +138,17 @@ class ParallelSession(BaseModel):
 
     @classmethod
     def validate_either_groups_or_subsessions(cls, values):
-        """Validate that a session has either working groups or subsessions, not both."""
+        """Validate that a session has either working groups 
+        or subsessions, but not both."""
         if values.get("working_groups") and values.get("subsessions"):
             raise ValueError(
-                "A ParallelSession can have either working_groups or subsessions, not both."
+                "A ParallelSession can have either working_groups or "
+                "subsessions, not both."
             )
         if not values.get("working_groups") and not values.get("subsessions"):
             raise ValueError(
-                "A ParallelSession must have either working_groups or subsessions."
+                "A ParallelSession must have either working_groups or "
+                "subsessions."
             )
         return values
 
@@ -145,7 +165,8 @@ class ConferenceConfig(BaseModel):
     description: str = Field(..., description="Description of the conference")
     participants: List[Participant] = Field(..., description="List of participants")
     parallel_sessions: List[ParallelSession] = Field(
-        ..., description="Parallel sessions"
+        ...,
+        description="Parallel sessions"
     )
 
 
