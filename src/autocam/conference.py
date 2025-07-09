@@ -9,6 +9,7 @@ from typing import Optional
 
 from .config import enforce_working_group_constraints
 from .config import load_conference_config
+from .models import Participant
 
 
 class ModelInterface(ABC):
@@ -65,20 +66,48 @@ class ParticipantRegistry:
 class Conference:
     """A conference loaded directly from YAML configuration."""
 
-    def __init__(self, yaml_path: str):
-        """Initialize conference from YAML file."""
-        self.config = load_conference_config(yaml_path)
+    def __init__(self, config_or_path):
+        """Initialize conference from YAML file or ConferenceConfig."""
+        if isinstance(config_or_path, str):
+            # YAML file path
+            self.config = load_conference_config(config_or_path)
+        elif hasattr(config_or_path, 'name') and hasattr(config_or_path, 'participants'):
+            # ConferenceConfig object
+            self.config = config_or_path
+        else:
+            raise ValueError("Must provide either YAML file path (str) or ConferenceConfig object")
+        
         self.name = self.config.name
         self.registry = ParticipantRegistry()
 
         # Validate the configuration
         enforce_working_group_constraints(self.config)
 
+    @classmethod
+    def from_config(cls, config):
+        """Create conference from ConferenceConfig directly."""
+        conference = cls.__new__(cls)
+        conference.config = config
+        conference.name = config.name
+        conference.registry = ParticipantRegistry()
+        
+        # Validate the configuration
+        enforce_working_group_constraints(config)
+        
+        return conference
+
     def register_participant(
-        self, name: str, model: ModelInterface, spec: Dict[str, Any]
+        self, model: ModelInterface, spec: Participant
     ):
         """Register a participant model."""
-        self.registry.register_model(name, model, spec)
+        # Validate spec is a Participant object
+        if not isinstance(spec, Participant):
+            raise ValueError("spec must be a Participant object")
+        
+        spec_dict = spec.dict()
+        name = spec.name
+        
+        self.registry.register_model(name, model, spec_dict)
 
     def get_participant(self, name: str) -> Optional[ModelInterface]:
         """Get a participant model by name."""
@@ -161,6 +190,39 @@ class Conference:
             if participant.name == name:
                 return participant
         return None
+
+    def pretty_print(self):
+        """Print conference setup in a pretty format."""
+        print(f"🎓 Conference: {self.name}")
+        print("=" * 50)
+        
+        print(f"\n📋 Participants ({len(self.config.participants)}):")
+        for participant in self.config.participants:
+            print(f"  • {participant.name} ({participant.model_tag}, {participant.dimension})")
+            print(f"    Input: {participant.in_channels} → Output: {participant.out_channels}")
+            if participant.config:
+                print(f"    Config: {participant.config}")
+        
+        print(f"\n📚 Sessions ({len(self.config.parallel_sessions)}):")
+        for session in self.config.parallel_sessions:
+            print(f"\n  📖 {session.name}")
+            print(f"     Description: {session.description}")
+            print(f"     Training epochs: {session.training_epochs}")
+            
+            if session.working_groups:
+                print(f"     Working Groups ({len(session.working_groups)}):")
+                for wg in session.working_groups:
+                    print(f"       🔧 {wg.name}: {wg.description}")
+                    print(f"         Participants: {', '.join(wg.participants)}")
+                    print(f"         Training mandate: {wg.training_mandate}")
+                    if wg.student_participants:
+                        print(f"         Students: {', '.join(wg.student_participants)}")
+                    if wg.target_participants:
+                        print(f"         Targets: {', '.join(wg.target_participants)}")
+                    print(f"         Training epochs: {wg.training_epochs}")
+        
+        print("\n" + "=" * 50)
+        print("✅ Conference setup complete!")
 
 
 def create_conference(yaml_path: str) -> Conference:
