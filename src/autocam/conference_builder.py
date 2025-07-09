@@ -98,14 +98,19 @@ def create_conference_grid(
             group_name = f"group{session_idx+1}{group_idx+1}"
             group_description = ",".join([participant_names[i] for i in model_indices])
             
+            # Configure working group based on training mandate
+            working_group_config = _configure_working_group_for_mandate(
+                training_mandate, 
+                [participant_names[i] for i in model_indices]
+            )
+            
             working_group = WorkingGroup(
                 name=group_name,
                 description=group_description,
                 participants=[participant_names[i] for i in model_indices],
                 training_mandate=training_mandate,
-                student_participants=[participant_names[i] for i in model_indices],
-                target_participants=[participant_names[i] for i in model_indices],
-                training_epochs=100
+                training_epochs=100,
+                **working_group_config
             )
             working_groups.append(working_group)
         
@@ -127,6 +132,51 @@ def create_conference_grid(
     )
     
     return conference_config
+
+
+def _configure_working_group_for_mandate(
+    training_mandate: TrainingMandate, 
+    participants: List[str]
+) -> dict:
+    """Configure working group parameters based on training mandate."""
+    
+    if training_mandate == TrainingMandate.ONE_VS_ONE:
+        # Split participants into students and targets
+        mid_point = len(participants) // 2
+        students = participants[:mid_point]
+        targets = participants[mid_point:]
+        return {
+            "student_participants": students,
+            "target_participants": targets
+        }
+    
+    elif training_mandate == TrainingMandate.ONE_VS_RANDOM_MEAN:
+        return {
+            "student_participants": participants,
+            "random_mean_count": 3
+        }
+    
+    elif training_mandate == TrainingMandate.ONE_VS_FIXED:
+        # Use first participant as fixed target
+        students = participants[1:] if len(participants) > 1 else []
+        return {
+            "student_participants": students,
+            "fixed_target": participants[0] if participants else None
+        }
+    
+    elif training_mandate == TrainingMandate.RANDOM_PAIRS:
+        # All participants can be both students and targets
+        return {}
+    
+    elif training_mandate == TrainingMandate.BARYCENTRIC_TARGETS:
+        return {
+            "student_participants": participants,
+            "barycentric_min_models": 2,
+            "barycentric_max_models": 3
+        }
+    
+    else:
+        return {}
 
 
 def create_conference_with_custom_mixing(
@@ -181,14 +231,20 @@ def create_conference_with_custom_mixing(
                 # Custom slice pattern
                 model_indices = list(range(num_models))[pattern][:size]
             
+            # Configure working group for mandate
+            participant_names = [f"model_{i}" for i in model_indices]
+            working_group_config = _configure_working_group_for_mandate(
+                TrainingMandate.ONE_VS_ONE, 
+                participant_names
+            )
+            
             working_group = WorkingGroup(
                 name=group_config["name"],
                 description=",".join([f"model_{i}" for i in model_indices]),
                 participants=[f"model_{i}" for i in model_indices],
                 training_mandate=TrainingMandate.ONE_VS_ONE,
-                student_participants=[f"model_{i}" for i in model_indices],
-                target_participants=[f"model_{i}" for i in model_indices],
-                training_epochs=100
+                training_epochs=100,
+                **working_group_config
             )
             working_groups.append(working_group)
         
@@ -205,4 +261,31 @@ def create_conference_with_custom_mixing(
         description="Conference with custom mixing patterns",
         participants=participants,
         parallel_sessions=sessions
-    ) 
+    )
+
+
+def demonstrate_mandate_usage(conference_config: ConferenceConfig, models: dict, batch, optimizers):
+    """Demonstrate how to use the new training mandate protocol system.
+    
+    This shows how to use the protocol methods directly on the training mandate enum.
+    """
+    print("🎓 Training Mandate Protocol Demonstration")
+    print("=" * 50)
+    
+    for session in conference_config.parallel_sessions:
+        print(f"📚 Session: {session.name}")
+        for working_group in session.working_groups:
+            print(f"  Working Group: {working_group.name}")
+            print(f"  Training Mandate: {working_group.training_mandate}")
+            
+            # Use the protocol methods directly on the mandate enum
+            targets = working_group.training_mandate.get_reference(batch, working_group, models)
+            pairs = working_group.training_mandate.get_student_target_pairs(working_group)
+            optimizer_assignments = working_group.training_mandate.get_optimizer_assignments(working_group, optimizers)
+            
+            print(f"    Targets generated: {list(targets.keys())}")
+            print(f"    Student-target pairs: {pairs}")
+            print(f"    Optimizer assignments: {list(optimizer_assignments.keys())}")
+            print()
+    
+    print("✅ Protocol demonstration completed!") 

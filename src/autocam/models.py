@@ -5,6 +5,11 @@ from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Tuple
+from abc import ABC, abstractmethod
+import random
+import torch
+import numpy as np
 
 from pydantic import BaseModel
 from pydantic import Field
@@ -25,6 +30,230 @@ class Dimension(str, Enum):
     D3 = "3D"
 
 
+class MandateProtocol(ABC):
+    """Abstract base class for training mandate protocols."""
+    
+    @abstractmethod
+    def get_reference(self, batch, working_group, models) -> Dict[str, torch.Tensor]:
+        """Generate target vectors according to mandate protocol."""
+        pass
+    
+    @abstractmethod
+    def get_student_target_pairs(self, working_group) -> List[Tuple[str, str]]:
+        """Return student-target pairs for this mandate."""
+        pass
+    
+    @abstractmethod
+    def get_optimizer_assignments(self, working_group, optimizers) -> Dict[str, Any]:
+        """Assign optimizers to students."""
+        pass
+
+
+class OneVsOneProtocol(MandateProtocol):
+    """Protocol for one vs one training mandate."""
+    
+    def get_reference(self, batch, working_group, models) -> Dict[str, torch.Tensor]:
+        """Generate targets using fixed student-target pairs."""
+        targets = {}
+        student_participants = working_group.student_participants or []
+        target_participants = working_group.target_participants or []
+        
+        for i, student_name in enumerate(student_participants):
+            if i < len(target_participants):
+                target_name = target_participants[i]
+            else:
+                # If no corresponding target, pick random one
+                target_name = random.choice(target_participants)
+            
+            if student_name in models and target_name in models:
+                with torch.no_grad():
+                    targets[student_name] = models[target_name].forward(batch)
+        
+        return targets
+    
+    def get_student_target_pairs(self, working_group) -> List[Tuple[str, str]]:
+        """Return fixed student-target pairs."""
+        student_participants = working_group.student_participants or []
+        target_participants = working_group.target_participants or []
+        
+        pairs = []
+        for i, student in enumerate(student_participants):
+            if i < len(target_participants):
+                pairs.append((student, target_participants[i]))
+            else:
+                # If no corresponding target, pair with first target
+                if target_participants:
+                    pairs.append((student, target_participants[0]))
+        
+        return pairs
+    
+    def get_optimizer_assignments(self, working_group, optimizers) -> Dict[str, Any]:
+        """Assign optimizers to students."""
+        student_participants = working_group.student_participants or []
+        return {student: optimizers.get(student) for student in student_participants}
+
+
+class OneVsRandomMeanProtocol(MandateProtocol):
+    """Protocol for one vs random mean training mandate."""
+    
+    def get_reference(self, batch, working_group, models) -> Dict[str, torch.Tensor]:
+        """Generate targets using mean of random model outputs."""
+        targets = {}
+        student_participants = working_group.student_participants or []
+        available_models = list(models.keys())
+        random_mean_count = working_group.random_mean_count or 2
+        
+        for student_name in student_participants:
+            if student_name in models and len(available_models) >= random_mean_count:
+                # Choose random models for mean
+                k = random.randint(2, min(random_mean_count, len(available_models)))
+                chosen_models = random.sample(available_models, k)
+                
+                # Compute mean of random model outputs
+                mean_output = None
+                for model_name in chosen_models:
+                    if model_name != student_name:
+                        model_output = models[model_name].forward(batch)
+                        if mean_output is None:
+                            mean_output = model_output
+                        else:
+                            mean_output = (mean_output + model_output) / 2
+                
+                if mean_output is not None:
+                    targets[student_name] = mean_output
+        
+        return targets
+    
+    def get_student_target_pairs(self, working_group) -> List[Tuple[str, str]]:
+        """Return student-target pairs (dynamic, generated per batch)."""
+        # For random mean, pairs are generated dynamically in get_reference
+        return []
+    
+    def get_optimizer_assignments(self, working_group, optimizers) -> Dict[str, Any]:
+        """Assign optimizers to students."""
+        student_participants = working_group.student_participants or []
+        return {student: optimizers.get(student) for student in student_participants}
+
+
+class OneVsFixedProtocol(MandateProtocol):
+    """Protocol for one vs fixed training mandate."""
+    
+    def get_reference(self, batch, working_group, models) -> Dict[str, torch.Tensor]:
+        """Generate targets using fixed target model."""
+        targets = {}
+        student_participants = working_group.student_participants or []
+        fixed_target = working_group.fixed_target
+        
+        if fixed_target not in models:
+            return targets
+        
+        target_model = models[fixed_target]
+        with torch.no_grad():
+            fixed_output = target_model.forward(batch)
+        
+        for student_name in student_participants:
+            if student_name in models and student_name != fixed_target:
+                targets[student_name] = fixed_output
+        
+        return targets
+    
+    def get_student_target_pairs(self, working_group) -> List[Tuple[str, str]]:
+        """Return student-target pairs (all students vs fixed target)."""
+        student_participants = working_group.student_participants or []
+        fixed_target = working_group.fixed_target
+        
+        if not fixed_target:
+            return []
+        
+        return [(student, fixed_target) for student in student_participants]
+    
+    def get_optimizer_assignments(self, working_group, optimizers) -> Dict[str, Any]:
+        """Assign optimizers to students."""
+        student_participants = working_group.student_participants or []
+        return {student: optimizers.get(student) for student in student_participants}
+
+
+class RandomPairsProtocol(MandateProtocol):
+    """Protocol for random pairs training mandate."""
+    
+    def get_reference(self, batch, working_group, models) -> Dict[str, torch.Tensor]:
+        """Generate targets using random student-target pairs."""
+        targets = {}
+        participants = working_group.participants
+        available_participants = [p for p in participants if p in models]
+        
+        if len(available_participants) < 2:
+            return targets
+        
+        # Randomly pair participants
+        random.shuffle(available_participants)
+        pairs = []
+        for i in range(0, len(available_participants) - 1, 2):
+            pairs.append((available_participants[i], available_participants[i + 1]))
+        
+        for student_name, target_name in pairs:
+            if student_name in models and target_name in models:
+                with torch.no_grad():
+                    targets[student_name] = models[target_name].forward(batch)
+        
+        return targets
+    
+    def get_student_target_pairs(self, working_group) -> List[Tuple[str, str]]:
+        """Return random student-target pairs (generated per batch)."""
+        # For random pairs, pairs are generated dynamically in get_reference
+        return []
+    
+    def get_optimizer_assignments(self, working_group, optimizers) -> Dict[str, Any]:
+        """Assign optimizers to students."""
+        participants = working_group.participants
+        return {participant: optimizers.get(participant) for participant in participants}
+
+
+class BarycentricTargetsProtocol(MandateProtocol):
+    """Protocol for barycentric targets training mandate."""
+    
+    def get_reference(self, batch, working_group, models) -> Dict[str, torch.Tensor]:
+        """Generate targets using barycentric combinations."""
+        targets = {}
+        student_participants = working_group.student_participants or []
+        available_models = list(models.keys())
+        min_models = working_group.barycentric_min_models or 2
+        max_models = working_group.barycentric_max_models or 3
+        
+        for student_name in student_participants:
+            if student_name in models and len(available_models) >= min_models:
+                # Choose random number of models for barycentric combination
+                k = random.randint(min_models, min(max_models, len(available_models)))
+                chosen_models = random.sample(available_models, k)
+                
+                # Compute barycentric combination
+                barycentric_output = None
+                weights = np.random.dirichlet(np.ones(k))
+                
+                for i, model_name in enumerate(chosen_models):
+                    if model_name != student_name:
+                        model_output = models[model_name].forward(batch)
+                        if barycentric_output is None:
+                            barycentric_output = weights[i] * model_output
+                        else:
+                            barycentric_output += weights[i] * model_output
+                
+                if barycentric_output is not None:
+                    targets[student_name] = barycentric_output
+        
+        return targets
+    
+    def get_student_target_pairs(self, working_group) -> List[Tuple[str, str]]:
+        """Return student-target pairs (dynamic, generated per batch)."""
+        # For barycentric targets, pairs are generated dynamically in get_reference
+        return []
+    
+    def get_optimizer_assignments(self, working_group, optimizers) -> Dict[str, Any]:
+        """Assign optimizers to students."""
+        student_participants = working_group.student_participants or []
+        return {student: optimizers.get(student) for student in student_participants}
+
+
 class TrainingMandate(str, Enum):
     """Training mandate types for working groups."""
 
@@ -37,6 +266,30 @@ class TrainingMandate(str, Enum):
     BARYCENTRIC_TARGETS = (
         "barycentric_targets"  # Random barycentric combinations as targets
     )
+    
+    @property
+    def protocol(self) -> MandateProtocol:
+        """Get the protocol instance for this mandate."""
+        protocols = {
+            TrainingMandate.ONE_VS_ONE: OneVsOneProtocol(),
+            TrainingMandate.ONE_VS_RANDOM_MEAN: OneVsRandomMeanProtocol(),
+            TrainingMandate.ONE_VS_FIXED: OneVsFixedProtocol(),
+            TrainingMandate.RANDOM_PAIRS: RandomPairsProtocol(),
+            TrainingMandate.BARYCENTRIC_TARGETS: BarycentricTargetsProtocol(),
+        }
+        return protocols[self]
+    
+    def get_reference(self, batch, working_group, models) -> Dict[str, torch.Tensor]:
+        """Generate target vectors according to mandate protocol."""
+        return self.protocol.get_reference(batch, working_group, models)
+    
+    def get_student_target_pairs(self, working_group) -> List[Tuple[str, str]]:
+        """Return student-target pairs for this mandate."""
+        return self.protocol.get_student_target_pairs(working_group)
+    
+    def get_optimizer_assignments(self, working_group, optimizers) -> Dict[str, Any]:
+        """Assign optimizers to students."""
+        return self.protocol.get_optimizer_assignments(working_group, optimizers)
 
 
 class Participant(BaseModel):
